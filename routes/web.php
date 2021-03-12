@@ -39,4 +39,10 @@ Route::get('/', function () {
 
 Auth::routes();
 
+Route::middleware(['auth'])->group(function () {
+    // Chats
+    Route::resource('chats', App\Http\Controllers\ChatController::class);
+});
+
+
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

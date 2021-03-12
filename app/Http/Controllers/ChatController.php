@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chat;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 
 class ChatController extends Controller
 {
@@ -14,7 +17,9 @@ class ChatController extends Controller
      */
     public function index()
     {
-        //
+        $chats = User::where('id', '=', Auth::id())->get()->first()->userChats()->select(['id', 'type'])->get()->toArray();
+        $chats_json = json_encode($chats);
+        return view('chats', compact(['chats_json']));
     }
 
     /**
