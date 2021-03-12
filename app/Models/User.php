@@ -45,4 +45,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Room::class);
     }
+
+    public function userChats()
+    {
+        return $this->belongsToMany(Chat::class, 'chat_members');
+    }
 }

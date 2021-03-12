@@ -17,25 +17,25 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/chat', function () {
-    return view('chat');
-});
+// Route::get('/chat', function () {
+//     return view('chat');
+// });
 
-Route::post('laravel-websockets/event', function (Illuminate\Http\Request $request) {    
-    App\Events\PublicChat::dispatch($request->input('data'));
-});
+// Route::post('laravel-websockets/event', function (Illuminate\Http\Request $request) {    
+//     App\Events\PublicChat::dispatch($request->input('data'));
+// });
 
-Route::post('messages', function (Illuminate\Http\Request $request) {
-    App\Events\PublicChat::dispatch($request->input('body'));
-});
+// Route::post('messages', function (Illuminate\Http\Request $request) {
+//     App\Events\PublicChat::dispatch($request->input('body'));
+// });
 
-Route::post('private-message', function (Illuminate\Http\Request $request) {
-    App\Events\PrivateChat::dispatch($request->input());
-});
+// Route::post('private-message', function (Illuminate\Http\Request $request) {
+//     App\Events\PrivateChat::dispatch($request->input());
+// });
 
-Route::get('room/{room}', function (App\Models\Room $room) {
-    return view('room', ['room' => $room]);
-});
+// Route::get('room/{room}', function (App\Models\Room $room) {
+//     return view('room', ['room' => $room]);
+// });
 
 Auth::routes();
 
