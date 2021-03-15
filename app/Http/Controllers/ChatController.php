@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Chat;
+use App\Models\ChatMessage;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,9 +18,43 @@ class ChatController extends Controller
      */
     public function index()
     {
-        $chats = User::where('id', '=', Auth::id())->get()->first()->userChats()->select(['id', 'type'])->get()->toArray();
+        // Использую методы Laravel
+        // $chats = User::where('id', '=', Auth::id())->get()->first()->userChats()->select(['id', 'type', 'title', 'last_message'])->get()->toArray();
+        // $chats_json = json_encode($chats);
+        // return response()->json($chats_json);
+        // return view('chats', compact(['chats_json']));
+
+        $chats = Chat::join('chat_members', 'chat_members.chat_id', '=', 'chats.id')
+                    ->where('chat_members.user_id', '=', Auth::id())
+                    ->select(['chats.id', 'chats.type', 'chats.last_message', 'chat_members.chat_title'])
+                    ->get();
         $chats_json = json_encode($chats);
+
         return view('chats', compact(['chats_json']));
+    }
+
+    public function getAllMessages($chat_id)
+    {
+        $chat_id = (int)$chat_id;
+        $chat = Chat::where('id', '=', $chat_id)->get()->first();
+        if ($chat && $chat->members->contains('id', Auth::id())) {
+            $messages = ChatMessage::join('users', 'users.id', '=', 'chat_messages.user_id')
+                                    ->where('chat_messages.chat_id', '=', $chat_id)
+                                    ->select(['chat_messages.content', 'chat_messages.created_at', 'users.name'])
+                                    ->orderBy('chat_messages.created_at', 'asc')
+                                    ->get()
+                                    ->toArray();
+            $messages_json = json_encode($messages);
+            // return view('chat', compact(['messages_json']));
+            return response()->json($messages_json);
+        } else {
+            return response()->json('Not contains');
+        }
+    }
+
+    public function sendMessage()
+    {
+        return 0;
     }
 
     /**
@@ -29,7 +64,7 @@ class ChatController extends Controller
      */
     public function create()
     {
-        //
+        App\Events\PrivateChat::dispatch($request->input());
     }
 
     /**
@@ -40,7 +75,7 @@ class ChatController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
     }
 
     /**
@@ -49,9 +84,26 @@ class ChatController extends Controller
      * @param  \App\Models\Chat  $chat
      * @return \Illuminate\Http\Response
      */
-    public function show(Chat $chat)
+
+    // Поправить проверку на доступ к чату (1 и 2 запрос)
+    public function show(Request $request, $chat_id)
     {
-        //
+        // $chat_id = (int)$chat;
+        // $chat = Chat::where('id', '=', $chat_id)->get()->first();
+        // if ($chat && $chat->members->contains('id', Auth::id())) {
+        //     $messages = ChatMessage::join('users', 'users.id', '=', 'chat_messages.user_id')
+        //                             ->where('chat_messages.chat_id', '=', $chat_id)
+        //                             ->select(['chat_messages.content', 'chat_messages.created_at', 'users.name'])
+        //                             ->orderBy('chat_messages.created_at', 'asc')
+        //                             ->get()
+        //                             ->toArray();
+        //     $messages_json = json_encode($messages);
+        //     return view('chat', compact(['messages_json']));
+        // } else {
+        //     return response()->json('Not contains');
+        // }
+
+        return view('chat', compact(['chat_id']));
     }
 
     /**

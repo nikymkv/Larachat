@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    {{ $chats_json }}
+<div class="container">
+    <chats :chats="{{ $chats_json }}"></chats>
+</div>
 @endsection

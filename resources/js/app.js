@@ -22,6 +22,11 @@ window.Vue = require('vue').default;
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 Vue.component('chat-component', require('./components/ChatComponent.vue').default);
 Vue.component('private-chat', require('./components/PrivateChatComponent.vue').default);
+Vue.component('chats', require('./components/ChatsComponent.vue').default);
+Vue.component('chat', require('./components/ShowChatComponent.vue').default);
+
+import VueChatScroll from 'vue-chat-scroll'
+Vue.use(VueChatScroll)
 
 /**
  * Next, we will create a fresh Vue application instance and attach it to

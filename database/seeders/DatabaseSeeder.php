@@ -13,6 +13,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        \App\Models\User::factory(1)->create();
+        \App\Models\User::factory(5)->create()->each(function($user) {
+            $user->userChats()->create([
+                'created_user_id' => $user->id,
+                'type' => rand(1, 2) == 2 ? 'dialog' : 'public',
+                'last_message' => 'Создан чат',
+            ]);
+        });
+
+        $this->call(ChatMemberSeeder::class);
     }
 }

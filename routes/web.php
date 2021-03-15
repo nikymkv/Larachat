@@ -41,7 +41,14 @@ Auth::routes();
 
 Route::middleware(['auth'])->group(function () {
     // Chats
-    Route::resource('chats', App\Http\Controllers\ChatController::class);
+    Route::get('chats', [App\Http\Controllers\ChatController::class, 'index']);
+    Route::get('chats/{chat_id}', [App\Http\Controllers\ChatController::class, 'show']);
+    Route::get('chats/{chat_id}/messages', [App\Http\Controllers\ChatController::class, 'getAllMessages']);
+    Route::post('messages', [App\Http\Controllers\ChatController::class, 'sendMessage']);
+    // Route::resource('chats', App\Http\Controllers\ChatController::class);
+    // Route::resource('messages', App\Http\Controllers\ChatMessageController::class)->only([
+    //     'store', 'destroy'
+    // ]);
 });
 
 

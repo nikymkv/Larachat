@@ -17,6 +17,7 @@ class CreateChatsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('created_user_id');
             $table->char('type', 20);
+            $table->string('last_message', 50)->nullable();
         });
     }
 

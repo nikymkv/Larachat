@@ -16,6 +16,9 @@ class CreateChatMembersTable extends Migration
         Schema::create('chat_members', function (Blueprint $table) {
             $table->unsignedBigInteger('chat_id');
             $table->unsignedBigInteger('user_id');
+            $table->string('chat_title', 100)->default('Чат');
+
+            $table->unique(['chat_id', 'user_id']);
 
             $table->foreign('chat_id')->references('id')->on('chats');
             $table->foreign('user_id')->references('id')->on('users');
