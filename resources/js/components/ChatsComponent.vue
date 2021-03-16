@@ -20,7 +20,7 @@
 
 <script>
     export default {
-        props: ['chats'],
+        props: ['user'],
         data() {
             return {
                 chats: [],
@@ -28,5 +28,34 @@
         },
         mounted() {
         },
+        computed: {
+            channel() {
+                return window.Echo.private('user.' + this.user.id)
+            }
+        },
+        created() {
+            this.fetchChats()
+            this.channel
+                .listen('NewMessage', (event) => {
+                    let data = event.data
+                    this.chats = this.chats.filter(c => c.id != data.chat_id)
+                    this.chats.splice(0, 0, {
+                        id: data.chat_id,
+                        chat_title: data.name,
+                        last_message: data.content,
+                    })
+                })
+                // .notification((notification) => {
+                //     console.log(notification.data);
+                // });
+        },
+        methods: {
+            fetchChats() {
+                axios.get('chats/fetch-all').then(response => {
+                    this.chats = JSON.parse(response.data);
+                    console.log(JSON.parse(response.data))
+                })
+            },
+        }
     }
 </script>

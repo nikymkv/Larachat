@@ -1921,13 +1921,47 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
-  props: ['chats'],
+  props: ['user'],
   data: function data() {
     return {
       chats: []
     };
   },
-  mounted: function mounted() {}
+  mounted: function mounted() {},
+  computed: {
+    channel: function channel() {
+      return window.Echo["private"]('user.' + this.user.id);
+    }
+  },
+  created: function created() {
+    var _this = this;
+
+    this.fetchChats();
+    this.channel.listen('NewMessage', function (event) {
+      var data = event.data;
+      _this.chats = _this.chats.filter(function (c) {
+        return c.id != data.chat_id;
+      });
+
+      _this.chats.splice(0, 0, {
+        id: data.chat_id,
+        chat_title: data.name,
+        last_message: data.content
+      });
+    }); // .notification((notification) => {
+    //     console.log(notification.data);
+    // });
+  },
+  methods: {
+    fetchChats: function fetchChats() {
+      var _this2 = this;
+
+      axios.get('chats/fetch-all').then(function (response) {
+        _this2.chats = JSON.parse(response.data);
+        console.log(JSON.parse(response.data));
+      });
+    }
+  }
 });
 
 /***/ }),
@@ -2131,14 +2165,15 @@ __webpack_require__.r(__webpack_exports__);
       newMessage: '',
       users: [],
       activeUser: false,
-      typingTimer: false
+      typingTimer: false,
+      participants: []
     };
   },
   created: function created() {
     var _this = this;
 
     this.fetchMessages();
-    Echo.join('chat').here(function (user) {
+    Echo.join('chat.' + this.chat_id).here(function (user) {
       _this.users = user;
     }).joining(function (user) {
       _this.users.push(user);
@@ -2147,7 +2182,12 @@ __webpack_require__.r(__webpack_exports__);
         return u.id != user.id;
       });
     }).listen('PrivateChat', function (event) {
-      _this.messages.push(event.chat);
+      console.log(event.data);
+      var unixTimestamp = Date.parse(event.data.created_at);
+      var date = new Date(unixTimestamp);
+      event.data.created_at = date.getHours() + ':' + date.getMinutes();
+
+      _this.messages.push(event.data);
     }).listenForWhisper('typing', function (user) {
       _this.activeUser = user;
 
@@ -2165,24 +2205,46 @@ __webpack_require__.r(__webpack_exports__);
       var _this2 = this;
 
       axios.get(this.chat_id + '/messages').then(function (response) {
-        _this2.messages = JSON.parse(response.data);
-        console.log(_this2.messages);
+        var data = JSON.parse(response.data);
+        _this2.messages = data.messages;
+        _this2.participant = data.participant;
       });
     },
     sendMessage: function sendMessage() {
+      var cur = this.currentTime();
       this.messages.push({
-        user: this.user,
-        message: this.newMessage,
-        chat_id: this.chat_id
+        name: this.user.name,
+        content: this.newMessage,
+        created_at: cur
       });
       axios.post('messages', {
-        message: this.newMessage
+        user_id: this.user.id,
+        name: this.user.name,
+        chat_id: this.chat_id,
+        content: this.newMessage,
+        created_at: cur,
+        participant: this.participant
       });
       this.newMessage = '';
+      console.log(this.messages);
     },
     sendTypingEvent: function sendTypingEvent() {
-      Echo.join('chat').whisper('typing', this.user);
-      console.log(this.user.name + ' is typing now');
+      Echo.join('chat.' + this.chat_id).whisper('typing', this.user);
+    },
+    currentTime: function currentTime() {
+      // let current = new Date()
+      // let date = current.getFullYear() + '-' + (current.getMonth()+1) + '-' + current.getDate()
+      // let time = current.getHours() + ":" + current.getMinutes() + ":" + current.getSeconds()
+      // let dateTime = date +' '+ time
+      var now = new Date();
+      var hours = ("0" + now.getHours()).slice(-2);
+      var minutes = ("0" + now.getMinutes()).slice(-2);
+      var seconds = ("0" + now.getSeconds()).slice(-2);
+      var day = ("0" + now.getDate()).slice(-2);
+      var month = ("0" + (now.getMonth() + 1)).slice(-2);
+      var today = now.getFullYear() + "-" + month + "-" + day + ' ' + hours + ':' + minutes + ':' + seconds;
+      console.log(today);
+      return today;
     }
   }
 });
@@ -44537,7 +44599,14 @@ var render = function() {
             },
             _vm._l(_vm.messages, function(message, index) {
               return _c("li", { key: index, staticClass: "p-2" }, [
-                _c("strong", [_vm._v(_vm._s(message.name))]),
+                _c("strong", [
+                  _vm._v(
+                    _vm._s(message.name) +
+                      "[" +
+                      _vm._s(message.created_at) +
+                      "]"
+                  )
+                ]),
                 _vm._v(
                   "\n                        " +
                     _vm._s(message.content) +
@@ -44595,7 +44664,7 @@ var render = function() {
     _vm._v(" "),
     _c("div", { staticClass: "col-4" }, [
       _c("div", { staticClass: "card card-default" }, [
-        _c("div", { staticClass: "card-header" }, [_vm._v("Active Users")]),
+        _c("div", { staticClass: "card-header" }, [_vm._v("Members")]),
         _vm._v(" "),
         _c("div", { staticClass: "card-body" }, [
           _c(

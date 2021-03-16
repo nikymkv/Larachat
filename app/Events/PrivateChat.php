@@ -24,7 +24,6 @@ class PrivateChat implements ShouldBroadcast
     public function __construct($data)
     {
         $this->data = $data;
-        $this->dontBroadcastToCurrentUser();
     }
 
     /**
@@ -34,6 +33,6 @@ class PrivateChat implements ShouldBroadcast
      */
     public function broadcastOn()
     {
-        return new PresenceChannel('room');
+        return new PresenceChannel('chat.' . $this->data['chat_id']);
     }
 }

@@ -12,10 +12,23 @@ use Illuminate\Support\Facades\Broadcast;
 | used to check if an authenticated user can listen to the channel.
 |
 */
-
-Broadcast::channel('room.{room_id}', function ($user, $room_id) {
-    // if ($user->rooms->contains($room_id)) {
-    //     return $user->name;
-    // }
-    return $user;
+// Messages
+Broadcast::channel('chat.{chat_id}', function ($user, $chat_id) {
+    if ($user->containChat($chat_id)) {
+        return $user;
+    }
 });
+
+// Notifications
+Broadcast::channel('user.{user_id}', function ($user, $chat_id) {
+    // if ($user->containChat($chat_id)) {
+    //     return $user;
+    // }
+    return true;
+});
+// Broadcast::channel('events', function ($user) {
+//     // if ($user->containChat($chat_id)) {
+//     //     return $user;
+//     // }
+//     return true;
+// });

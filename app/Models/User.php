@@ -50,4 +50,17 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Chat::class, 'chat_members');
     }
+
+    public function containChat($chat_id)
+    {
+        $chat = User::join('chat_members', 'chat_members.user_id', '=', 'users.id')
+                    ->where('users.id', '=' , $this->id)
+                    ->where('chat_members.chat_id', '=' , $chat_id)
+                    ->select(['chat_members.chat_id'])
+                    ->limit(1)
+                    ->get()
+                    ->first();
+                    
+        return $chat == null ? false : true;
+    }
 }
