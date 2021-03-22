@@ -13,9 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
 // Route::get('/chat', function () {
 //     return view('chat');
@@ -37,7 +34,10 @@ Route::get('/', function () {
 //     return view('room', ['room' => $room]);
 // });
 
+
 Auth::routes();
+
+Route::get('/', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm']);
 
 Route::middleware(['auth'])->group(function () {
     // Chats
@@ -46,11 +46,4 @@ Route::middleware(['auth'])->group(function () {
     Route::post('chats/messages', [App\Http\Controllers\ChatController::class, 'sendMessage']);
     Route::get('chats/{chat_id}', [App\Http\Controllers\ChatController::class, 'show']);
     Route::get('chats/{chat_id}/messages', [App\Http\Controllers\ChatController::class, 'getAllMessages']);
-    // Route::resource('chats', App\Http\Controllers\ChatController::class);
-    // Route::resource('messages', App\Http\Controllers\ChatMessageController::class)->only([
-    //     'store', 'destroy'
-    // ]);
 });
-
-
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

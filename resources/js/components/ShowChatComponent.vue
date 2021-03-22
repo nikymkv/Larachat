@@ -77,7 +77,7 @@
                     console.log(event.data)
                     let unixTimestamp = Date.parse(event.data.created_at)
                     let date = new Date(unixTimestamp)
-                    event.data.created_at = date.getHours() + ':' + date.getMinutes()
+                    event.data.created_at = ("0" + date.getHours()).slice(-2) + ':' + ("0" + date.getMinutes()).slice(-2) + ' ' + ("0" + date.getDate()).slice(-2) + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear(),
                     this.messages.push(event.data);
                 })
                 .listenForWhisper('typing', user => {
@@ -99,18 +99,18 @@
                 })
             },
             sendMessage() {
-                let cur = this.currentTime();
+                let cur = new Date();
                 this.messages.push({
                     name: this.user.name,
                     content: this.newMessage,
-                    created_at: cur,
+                    created_at: ("0" + cur.getHours()).slice(-2) + ':' + ("0" + cur.getMinutes()).slice(-2) + ' ' + ("0" + cur.getDate()).slice(-2) + '-' + ("0" + (cur.getMonth() + 1)).slice(-2) + '-' + cur.getFullYear(),
                 });
                 axios.post('messages', {
                     user_id: this.user.id,
                     name: this.user.name,
                     chat_id: this.chat_id,
                     content: this.newMessage,
-                    created_at: cur,
+                    created_at: cur.toISOString(),
                     participant: this.participant,
                 });
                 this.newMessage = '';
@@ -120,21 +120,6 @@
                 Echo.join('chat.' + this.chat_id)
                     .whisper('typing', this.user);
             },
-            currentTime() {
-                // let current = new Date()
-                // let date = current.getFullYear() + '-' + (current.getMonth()+1) + '-' + current.getDate()
-                // let time = current.getHours() + ":" + current.getMinutes() + ":" + current.getSeconds()
-                // let dateTime = date +' '+ time
-                var now = new Date();
-                let hours = ("0" + now.getHours()).slice(-2)
-                let minutes = ("0" + now.getMinutes()).slice(-2)
-                let seconds = ("0" + now.getSeconds()).slice(-2)
-                var day = ("0" + now.getDate()).slice(-2);
-                var month = ("0" + (now.getMonth() + 1)).slice(-2);
-                var today = now.getFullYear() + "-" + (month) + "-" + (day) + ' ' + hours + ':' + minutes + ':' + seconds;
-                console.log(today)
-                return today;
-            }
         }
     }
 </script>

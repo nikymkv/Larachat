@@ -10,6 +10,7 @@ use App\Events\PrivateChat;
 use App\Events\NewMessage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 
 class ChatController extends Controller
@@ -88,17 +89,19 @@ class ChatController extends Controller
 
         echo '<pre>' . print_r($input, true) . '</pre>';
 
-        // $message = ChatMessage::insert([
-        //     'user_id' => $input['user_id'],
-        //     'chat_id' => $input['chat_id'],
-        //     'content' => $input['content'],
-        //     'created_at' => $input['created_at'],
-        // ]);
+        $dateToUTC = Carbon::parse($input['created_at'])->tz(config('app.timezone'));
 
-        // $chat = Chat::where('id', '=', $input['chat_id'])
-        //             ->update([
-        //                 'last_message' => $input['content']
-        //             ]);
+        $message = ChatMessage::insert([
+            'user_id' => $input['user_id'],
+            'chat_id' => $input['chat_id'],
+            'content' => $input['content'],
+            'created_at' => $dateToUTC,
+        ]);
+
+        $chat = Chat::where('id', '=', $input['chat_id'])
+                    ->update([
+                        'last_message' => $input['content']
+                    ]);
 
         broadcast(new PrivateChat($input))->toOthers();
         broadcast(new NewMessage([
@@ -107,7 +110,7 @@ class ChatController extends Controller
             'by_user_id' => $input['user_id'],
             'name' => $input['name'],
             'content' => $input['content'],
-            'created_at' => $input['created_at'],
+            'created_at' => $dateToUTC,
         ]))->toOthers();
     }
 

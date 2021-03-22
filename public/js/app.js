@@ -2185,9 +2185,7 @@ __webpack_require__.r(__webpack_exports__);
       console.log(event.data);
       var unixTimestamp = Date.parse(event.data.created_at);
       var date = new Date(unixTimestamp);
-      event.data.created_at = date.getHours() + ':' + date.getMinutes();
-
-      _this.messages.push(event.data);
+      event.data.created_at = ("0" + date.getHours()).slice(-2) + ':' + ("0" + date.getMinutes()).slice(-2) + ' ' + ("0" + date.getDate()).slice(-2) + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear(), _this.messages.push(event.data);
     }).listenForWhisper('typing', function (user) {
       _this.activeUser = user;
 
@@ -2211,18 +2209,18 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     sendMessage: function sendMessage() {
-      var cur = this.currentTime();
+      var cur = new Date();
       this.messages.push({
         name: this.user.name,
         content: this.newMessage,
-        created_at: cur
+        created_at: ("0" + cur.getHours()).slice(-2) + ':' + ("0" + cur.getMinutes()).slice(-2) + ' ' + ("0" + cur.getDate()).slice(-2) + '-' + ("0" + (cur.getMonth() + 1)).slice(-2) + '-' + cur.getFullYear()
       });
       axios.post('messages', {
         user_id: this.user.id,
         name: this.user.name,
         chat_id: this.chat_id,
         content: this.newMessage,
-        created_at: cur,
+        created_at: cur.toISOString(),
         participant: this.participant
       });
       this.newMessage = '';
@@ -2230,21 +2228,6 @@ __webpack_require__.r(__webpack_exports__);
     },
     sendTypingEvent: function sendTypingEvent() {
       Echo.join('chat.' + this.chat_id).whisper('typing', this.user);
-    },
-    currentTime: function currentTime() {
-      // let current = new Date()
-      // let date = current.getFullYear() + '-' + (current.getMonth()+1) + '-' + current.getDate()
-      // let time = current.getHours() + ":" + current.getMinutes() + ":" + current.getSeconds()
-      // let dateTime = date +' '+ time
-      var now = new Date();
-      var hours = ("0" + now.getHours()).slice(-2);
-      var minutes = ("0" + now.getMinutes()).slice(-2);
-      var seconds = ("0" + now.getSeconds()).slice(-2);
-      var day = ("0" + now.getDate()).slice(-2);
-      var month = ("0" + (now.getMonth() + 1)).slice(-2);
-      var today = now.getFullYear() + "-" + month + "-" + day + ' ' + hours + ':' + minutes + ':' + seconds;
-      console.log(today);
-      return today;
     }
   }
 });
