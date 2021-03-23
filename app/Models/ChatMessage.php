@@ -10,6 +10,8 @@ class ChatMessage extends Model
 {
     use HasFactory;
 
+    public $timestamps = FALSE;
+
     protected $fillable = [
         'chat_id',
         'user_id',
@@ -17,17 +19,13 @@ class ChatMessage extends Model
         'is_read',
     ];
 
-    protected $casts = [
-        'created_at' => "datetime:H:i d-m-Y",
-    ];
-
     public function chat()
     {
         return $this->belongsTo(Chat::class);
     }
 
-    public function getCreatedAtAttribute($value)
-    {
-        return Carbon::parse($value)->tz('Europe/Moscow');
-    }
+    // public function getCreatedAtAttribute($value)
+    // {
+    //     return Carbon::parse($value)->tz('Europe/Moscow');
+    // }
 }

@@ -2183,9 +2183,8 @@ __webpack_require__.r(__webpack_exports__);
       });
     }).listen('PrivateChat', function (event) {
       console.log(event.data);
-      var unixTimestamp = Date.parse(event.data.created_at);
-      var date = new Date(unixTimestamp);
-      event.data.created_at = ("0" + date.getHours()).slice(-2) + ':' + ("0" + date.getMinutes()).slice(-2) + ' ' + ("0" + date.getDate()).slice(-2) + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear(), _this.messages.push(event.data);
+
+      _this.messages.push(event.data);
     }).listenForWhisper('typing', function (user) {
       _this.activeUser = user;
 
@@ -2209,18 +2208,18 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     sendMessage: function sendMessage() {
-      var cur = new Date();
+      var curTime = Date.now();
       this.messages.push({
         name: this.user.name,
         content: this.newMessage,
-        created_at: ("0" + cur.getHours()).slice(-2) + ':' + ("0" + cur.getMinutes()).slice(-2) + ' ' + ("0" + cur.getDate()).slice(-2) + '-' + ("0" + (cur.getMonth() + 1)).slice(-2) + '-' + cur.getFullYear()
+        created_at: curTime
       });
       axios.post('messages', {
         user_id: this.user.id,
         name: this.user.name,
         chat_id: this.chat_id,
         content: this.newMessage,
-        created_at: cur.toISOString(),
+        created_at: curTime,
         participant: this.participant
       });
       this.newMessage = '';
@@ -2228,6 +2227,11 @@ __webpack_require__.r(__webpack_exports__);
     },
     sendTypingEvent: function sendTypingEvent() {
       Echo.join('chat.' + this.chat_id).whisper('typing', this.user);
+    },
+    toDateTime: function toDateTime(dateTime) {
+      console.log(dateTime);
+      var date = new Date(dateTime);
+      return ("0" + date.getHours()).slice(-2) + ':' + ("0" + date.getMinutes()).slice(-2) + ' ' + ("0" + date.getDate()).slice(-2) + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear();
     }
   }
 });
@@ -44586,7 +44590,7 @@ var render = function() {
                   _vm._v(
                     _vm._s(message.name) +
                       "[" +
-                      _vm._s(message.created_at) +
+                      _vm._s(_vm.toDateTime(message.created_at)) +
                       "]"
                   )
                 ]),

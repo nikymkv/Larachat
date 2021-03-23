@@ -7,7 +7,7 @@
                <div class="card-body p-0">
                    <ul class="list-unstyled" style="height:300px; overflow-y:scroll" v-chat-scroll>
                        <li class="p-2" v-for="(message, index) in messages" :key="index" >
-                           <strong>{{ message.name }}[{{message.created_at}}]</strong>
+                           <strong>{{ message.name }}[{{toDateTime(message.created_at)}}]</strong>
                            {{ message.content }}
                        </li>
                    </ul>
@@ -75,9 +75,6 @@
                 })
                 .listen('PrivateChat',(event) => {
                     console.log(event.data)
-                    let unixTimestamp = Date.parse(event.data.created_at)
-                    let date = new Date(unixTimestamp)
-                    event.data.created_at = ("0" + date.getHours()).slice(-2) + ':' + ("0" + date.getMinutes()).slice(-2) + ' ' + ("0" + date.getDate()).slice(-2) + '-' + ("0" + (date.getMonth() + 1)).slice(-2) + '-' + date.getFullYear(),
                     this.messages.push(event.data);
                 })
                 .listenForWhisper('typing', user => {
@@ -99,18 +96,19 @@
                 })
             },
             sendMessage() {
-                let cur = new Date();
+                let curTime = Date.now()
+
                 this.messages.push({
                     name: this.user.name,
                     content: this.newMessage,
-                    created_at: ("0" + cur.getHours()).slice(-2) + ':' + ("0" + cur.getMinutes()).slice(-2) + ' ' + ("0" + cur.getDate()).slice(-2) + '-' + ("0" + (cur.getMonth() + 1)).slice(-2) + '-' + cur.getFullYear(),
+                    created_at: curTime,
                 });
                 axios.post('messages', {
                     user_id: this.user.id,
                     name: this.user.name,
                     chat_id: this.chat_id,
                     content: this.newMessage,
-                    created_at: cur.toISOString(),
+                    created_at: curTime,
                     participant: this.participant,
                 });
                 this.newMessage = '';
@@ -120,6 +118,16 @@
                 Echo.join('chat.' + this.chat_id)
                     .whisper('typing', this.user);
             },
+
+            toDateTime(dateTime) {
+                console.log(dateTime)
+                let date = new Date(dateTime);
+                return ("0" + date.getHours()).slice(-2)+ ':' +
+                    ("0" + date.getMinutes()).slice(-2) + ' ' +
+                    ("0" + date.getDate()).slice(-2) + '-' +
+                    ("0" + (date.getMonth() + 1)).slice(-2) + '-' +
+                    date.getFullYear()
+            }
         }
     }
 </script>

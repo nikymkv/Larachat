@@ -22,12 +22,18 @@ class UserFactory extends Factory
      */
     public function definition()
     {
+        $listTimeZone = \DateTimeZone::listAbbreviations();
+        $tzKeys = array_keys($listTimeZone);
+        $k = $tzKeys[mt_rand(0, count($tzKeys)-1)];
+        $zone = $listTimeZone[$k][\mt_rand(0, count($listTimeZone[$k])-1)];
+
         return [
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
             'email_verified_at' => now(),
             'password' => bcrypt('0000'), // password
             'remember_token' => Str::random(10),
+            'tz' => $zone['timezone_id'],
         ];
     }
 

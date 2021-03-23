@@ -43,13 +43,19 @@ class ChatController extends Controller
         $chat_id = (int)$chat_id;
         $chat = Chat::where('id', '=', $chat_id)->get()->first();
         if ($chat && $chat->members->contains('id', Auth::id())) {
-            $response['messages'] = ChatMessage::join('users', 'users.id', '=', 'chat_messages.user_id')
+            $messages = ChatMessage::join('users', 'users.id', '=', 'chat_messages.user_id')
                                     ->where('chat_messages.chat_id', '=', $chat_id)
-                                    ->select(['chat_messages.content', 'chat_messages.created_at', 'users.name'])
+                                    ->select(['chat_messages.content', 'users.name', 'chat_messages.created_at'])
+                                    // ->selectRaw('unix_timestamp(`chat_messages`.`created_at`)*1000 as `created_at`')
+                                    // ->selectRaw('`chat_messages`.`created_at`)*1000 as `created_at`')
                                     ->orderBy('chat_messages.created_at', 'asc')
-                                    ->get()
-                                    ->toArray();
+                                    ->get();
 
+            foreach($messages as $m) {
+                $m->created_at = Carbon::createFromFormat('Y-m-d H:i:s', $m->created_at, 'UTC')->timezone(Auth::user()->tz);
+            }
+                
+            $response['messages'] = $messages->toArray();
             $response['participant'] = ChatMember::join('users', 'users.id', '=', 'chat_members.user_id')
                                                 ->where('chat_members.chat_id', '=', $chat_id)
                                                 ->where('users.id', '!=', Auth::id())
@@ -62,7 +68,7 @@ class ChatController extends Controller
             
             return response()->json($response_json);
         } else {
-            return response()->json('Not contains');
+            return response()->json('0');
         }
     }
 
@@ -88,8 +94,9 @@ class ChatController extends Controller
         ]);
 
         echo '<pre>' . print_r($input, true) . '</pre>';
-
-        $dateToUTC = Carbon::parse($input['created_at'])->tz(config('app.timezone'));
+        echo $input['created_at'] . '<br>';
+        $dateToUTC = Carbon::createFromTimestampMs($input['created_at'])->timezone(config('app.timezone'));
+        echo $dateToUTC;
 
         $message = ChatMessage::insert([
             'user_id' => $input['user_id'],
@@ -110,7 +117,7 @@ class ChatController extends Controller
             'by_user_id' => $input['user_id'],
             'name' => $input['name'],
             'content' => $input['content'],
-            'created_at' => $dateToUTC,
+            'created_at' => $input['created_at'],
         ]))->toOthers();
     }
 
